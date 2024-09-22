@@ -1,0 +1,2 @@
+rootProject.name = "infobez1"
+
