@@ -8,25 +8,30 @@ repositories {
     mavenCentral()
 }
 
-application {
-    mainClass.set("org.example.Encrypter")
-    applicationDefaultJvmArgs = listOf("-ea")
-}
+//application {
+//    mainClass.set("org.example.Encrypter")
+//    applicationDefaultJvmArgs = listOf("-ea")
+//}
 
 dependencies {
     implementation("com.beust:jcommander:1.69")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
-tasks.jar {
-    manifest.attributes["Main-Class"] = "com.example.Encrypter"
-    val dependencies = configurations
-        .runtimeClasspath
-        .get()
-        .map(::zipTree) // OR .map { zipTree(it) }
-    from(dependencies)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+tasks.test {
+    useJUnitPlatform()
 }
+
+//tasks.jar {
+//    manifest.attributes["Main-Class"] = "com.example.Encrypter"
+//    val dependencies = configurations
+//        .runtimeClasspath
+//        .get()
+//        .map(::zipTree) // OR .map { zipTree(it) }
+//    from(dependencies)
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//}
 
 // tasks.jar {
 // archiveBaseName.set("encrypter")

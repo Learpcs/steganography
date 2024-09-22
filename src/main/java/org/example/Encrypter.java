@@ -6,6 +6,9 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.JCommander;
+import org.example.utils.LanguageConverter;
+
+import javax.security.auth.callback.LanguageCallback;
 import java.util.Map;
 import java.util.BitSet;
 import java.nio.file.Files;
@@ -34,37 +37,7 @@ class Encrypter {
     }
 
     public void encrypt() throws IOException {
-        Map<Character, Character> rus_to_eng = new HashMap<>();
-        Map<Character, Character> eng_to_rus = new HashMap<>();
-
-        rus_to_eng.put('а', 'a');
-        rus_to_eng.put('е', 'e');
-        rus_to_eng.put('Е', 'E');
-        rus_to_eng.put('Т', 'T');
-        rus_to_eng.put('у', 'y');
-        rus_to_eng.put('О', 'O');
-        rus_to_eng.put('о', 'o');
-        rus_to_eng.put('р', 'p');
-        rus_to_eng.put('Р', 'P');
-        rus_to_eng.put('А', 'A');
-        rus_to_eng.put('Н', 'H');
-        rus_to_eng.put('К', 'K');
-        rus_to_eng.put('х', 'x');
-        rus_to_eng.put('Х', 'X');
-        rus_to_eng.put('с', 'c');
-        rus_to_eng.put('С', 'C');
-        rus_to_eng.put('В', 'B');
-        rus_to_eng.put('М', 'M');
-
-        assert(Character.isLowerCase('а'));
-        assert(Character.isUpperCase('А'));
-
-        for (Map.Entry<Character, Character> p : rus_to_eng.entrySet()) {
-            assert('а' <= p.getKey() && p.getKey() <= 'я' || 'А' <= p.getKey() && p.getKey() <= 'Я');
-            assert('a' <= p.getValue() && p.getValue() <= 'z' || 'A' <= p.getValue() && p.getValue() <= 'Z');
-            assert(Character.isLowerCase(p.getKey()) == Character.isLowerCase(p.getValue()));
-            eng_to_rus.put(p.getValue(), p.getKey());
-        }
+        LanguageConverter languageConverter = new LanguageConverter();
 
         BitSet st = new BitSet();
 
@@ -72,8 +45,8 @@ class Encrypter {
         StringBuilder container_text = new StringBuilder(new String(Files.readAllBytes(Paths.get(container)), StandardCharsets.UTF_8));
 
         for (int i = 0; i < input_text.length(); ++i) {
-            if (eng_to_rus.containsKey(input_text.charAt(i))) {
-                input_text.setCharAt(i, eng_to_rus.get(input_text.charAt(i)));
+            if (languageConverter.is_english(input_text.charAt(i))) {
+                input_text.setCharAt(i, languageConverter.eng_to_rus(input_text.charAt(i)));
             }
         }
 
@@ -88,10 +61,13 @@ class Encrypter {
 
         for (int i = 0; i < container_text.length(); ++i) {
             char ch = container_text.charAt(i);
-            if (rus_to_eng.containsKey(ch)) {
-                if (st.get(now)) {
-                    container_text.setCharAt(i, rus_to_eng.get(ch));
-                }
+            if (languageConverter.is_russian(ch) && st.get(now)) {
+                container_text.setCharAt(i, languageConverter.rus_to_eng(ch));
+            }
+            else if(languageConverter.is_english(ch) && !st.get(now)) {
+                container_text.setCharAt(i, languageConverter.eng_to_rus(ch));
+            }
+            if (languageConverter.is_english(ch) || languageConverter.is_russian(ch)) {
                 ++now;
             }
         }
