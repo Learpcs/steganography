@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import org.example.utils.LanguageConverter;
 
 import javax.security.auth.callback.LanguageCallback;
@@ -18,22 +19,36 @@ import java.nio.charset.StandardCharsets;
 
 class Encrypter {
 
-    @Parameter(names={"--input", "-i"})
+    @Parameter(names = {"--input", "-i"}, description = "Input file path", required = true)
     String input;
 
-    @Parameter(names={"--container", "-c"})
+    @Parameter(names = {"--container", "-c"}, description = "Container type", required = false)
     String container;
 
-    @Parameter(names={"--output", "-o"})
+    @Parameter(names = {"--output", "-o"}, description = "Output file path", required = true)
     String output;
 
-    public static void main(String[] argv) throws IOException {
+    @Parameter(names = {"--help", "-h"}, help = true)
+    private boolean help;
+
+    public static void main(String[] argv) {
         Encrypter main = new Encrypter();
-        JCommander.newBuilder()
+        JCommander commander = JCommander.newBuilder()
                 .addObject(main)
-                .build()
-                .parse(argv);
-        main.encrypt();
+                .programName("Encrypter")
+                .build();
+
+        try {
+            commander.parse(argv);
+            if (main.help) {
+                commander.usage();
+                return;
+            }
+            main.encrypt();
+        } catch (ParameterException | IOException e) {
+            System.err.println(e.getMessage());
+            commander.usage();
+        }
     }
 
     public void encrypt() throws IOException {

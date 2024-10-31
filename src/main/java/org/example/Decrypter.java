@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import org.example.utils.LanguageConverter;
 
 import java.util.Map;
@@ -17,19 +18,34 @@ import java.nio.charset.StandardCharsets;
 
 class Decrypter {
 
-    @Parameter(names={"--input", "-i"})
+
+    @Parameter(names={"--input", "-i"}, description = "Input file path", required = true)
     String input;
 
-    @Parameter(names={"--output", "-o"})
+    @Parameter(names={"--output", "-o"}, description = "Output file path", required = true)
     String output;
+
+    @Parameter(names={"--help", "-h"}, help = true)
+    private boolean help;
 
     public static void main(String[] argv) throws IOException {
         Decrypter main = new Decrypter();
-        JCommander.newBuilder()
+        JCommander commander = JCommander.newBuilder()
                 .addObject(main)
-                .build()
-                .parse(argv);
-        main.decrypt();
+                .programName("Decrypter")
+                .build();
+
+        try {
+            commander.parse(argv);
+            if (main.help) {
+                commander.usage();
+                return;
+            }
+            main.decrypt();
+        } catch (ParameterException e) {
+            System.err.println(e.getMessage());
+            commander.usage();
+        }
     }
 
     public void decrypt() throws IOException {
